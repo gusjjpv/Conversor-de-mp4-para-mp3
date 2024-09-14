@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Página Incrível</title>
+    <title>Conversor de Vídeo para Áudio</title>
 </head>
 <body>
-    <h1>hello world</h1>
-    <form action="{% url 'form' %}" method="POST">{% csrf_token %}
+    <h1>Conversão de Vídeo para Áudio</h1>
+    <form action="{% url 'form' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
         <label>Arquivo:</label><br>
-        <input type="file" name="video" accept="video/mp4"><br>
-        <input type="submit">
-      </form>
+        <input type="file" name="video" accept="video/mp4, video/mkv"><br>
+        <input type="submit" value="Converter">
+    </form>
 </body>
 </html>
