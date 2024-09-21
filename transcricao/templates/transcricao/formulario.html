@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcrição de Áudio</title>
+</head>
+
+<body>
+    <h1>Transcrição de Áudio</h1>
+    <form action="{% url 'transcrever' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="audio">Selecione um arquivo de áudio:</label><br>
+        <input type="file" id="audio" name="audio" accept="audio/mp3"><br><br>
+        <input type="submit" value="Transcrever">
+    </form>
+</body>
+
+</html>
