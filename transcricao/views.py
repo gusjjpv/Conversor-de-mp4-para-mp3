@@ -1,5 +1,6 @@
 import os
-import subprocess
+import whisper
+import uuid
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views import View
@@ -18,29 +19,32 @@ class TranscribeView(View):
         if not audio_file.name.endswith('.mp3'):
             return JsonResponse({"error": "Formato de arquivo inválido. Apenas arquivos MP3 são aceitos."}, status=400)
 
-        audio_path = os.path.join(settings.MEDIA_ROOT, 'output_audio.mp3')
-
-        with open(audio_path, 'wb+') as destination:
-            for chunk in audio_file.chunks():
-                destination.write(chunk)
-
-        model_name = "small"
+        unique_filename = f"{uuid.uuid4()}.mp3"
+        audio_path = os.path.join(settings.MEDIA_ROOT, unique_filename)
+        audio_abs_path = os.path.abspath(audio_path)
 
         try:
-            subprocess.run(
-                [
-                    "whisper",
-                    "--language", "pt",
-                    "--word_timestamps", "True",
-                    "--model", model_name,
-                    "--output_dir", f"output-{model_name}",
-                    audio_path
-                ],
-                check=True
-            )
+            with open(audio_abs_path, 'wb+') as destination:
+                for chunk in audio_file.chunks():
+                    destination.write(chunk)
+        except Exception as e:
+            return JsonResponse({"error": f"Erro ao salvar o arquivo: {str(e)}"}, status=500)
 
-            return JsonResponse({"message": "Transcrição gerada com sucesso!"}, status=200)
+        if not os.path.exists(audio_abs_path):
+            return JsonResponse({"error": "Erro ao salvar o arquivo de áudio."}, status=500)
 
-        except subprocess.CalledProcessError as e:
+        # Verifique se o arquivo realmente existe
+        if os.path.exists(audio_abs_path):
+            print(f"O arquivo foi salvo corretamente em: {audio_abs_path}")
+        else:
+            return JsonResponse({"error": "O arquivo de áudio não foi encontrado."}, status=500)
 
+        model = whisper.load_model("small")
+
+        try:
+            result = model.transcribe(audio_abs_path, language="pt")
+            transcricao = result['text']
+            return JsonResponse({"message": "Transcrição gerada com sucesso!", "transcricao": transcricao}, status=200)
+
+        except Exception as e:
             return JsonResponse({"error": f"Erro ao transcrever o arquivo: {str(e)}"}, status=500)
