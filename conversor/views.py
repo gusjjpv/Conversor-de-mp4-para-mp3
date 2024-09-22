@@ -1,14 +1,17 @@
+import os
 from django.shortcuts import render
 from django.http import HttpResponse, FileResponse
-from moviepy.editor import *
-import os
+from moviepy.editor import VideoFileClip
 from django.conf import settings
+from django.views import View
 
-def home(request):
-    return render(request, 'home.html')
+class ConverterView(View):
+    template_name = 'home.html'
 
-def form(request):
-    if request.method == "POST":
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
         video_file = request.FILES.get('video')
 
         if video_file:
@@ -16,7 +19,7 @@ def form(request):
 
             if not os.path.exists(settings.MEDIA_ROOT):
                 os.makedirs(settings.MEDIA_ROOT)
-            
+
             with open(video_path, 'wb+') as destination:
                 for chunk in video_file.chunks():
                     destination.write(chunk)
@@ -34,5 +37,3 @@ def form(request):
             return response
         else:
             return HttpResponse("Nenhum vídeo enviado.")
-    else:
-        return HttpResponse("Método de requisição inválido.")
