@@ -1,6 +1,5 @@
 import os
 import whisper
-import uuid
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views import View
@@ -19,8 +18,8 @@ class TranscribeView(View):
         if not audio_file.name.endswith('.mp3'):
             return JsonResponse({"error": "Formato de arquivo inválido. Apenas arquivos MP3 são aceitos."}, status=400)
 
-        unique_filename = f"{uuid.uuid4()}.mp3"
-        audio_path = os.path.join(settings.MEDIA_ROOT, unique_filename)
+        audio_filename = 'audio.mp3'
+        audio_path = os.path.join(settings.MEDIA_ROOT, audio_filename)
         audio_abs_path = os.path.abspath(audio_path)
 
         try:
@@ -33,17 +32,12 @@ class TranscribeView(View):
         if not os.path.exists(audio_abs_path):
             return JsonResponse({"error": "Erro ao salvar o arquivo de áudio."}, status=500)
 
-        # Verifique se o arquivo realmente existe
-        if os.path.exists(audio_abs_path):
-            print(f"O arquivo foi salvo corretamente em: {audio_abs_path}")
-        else:
-            return JsonResponse({"error": "O arquivo de áudio não foi encontrado."}, status=500)
-
         model = whisper.load_model("small")
 
         try:
             result = model.transcribe(audio_abs_path, language="pt")
             transcricao = result['text']
+
             return JsonResponse({"message": "Transcrição gerada com sucesso!", "transcricao": transcricao}, status=200)
 
         except Exception as e:
