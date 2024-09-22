@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Conversão de Vídeo para Áudio</h1>
-    <form action="{% url 'form' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+    <form action="{% url 'home' %}" method="POST" enctype="multipart/form-data">{% csrf_token %}
         <label>Arquivo:</label><br>
         <input type="file" name="video" accept="video/mp4, video/mkv"><br>
         <input type="submit" value="Converter">
