@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcrição de Áudio</title>
+    <style>
+        #transcricao-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Transcrição de Áudio</h1>
+    <form action="{% url 'transcrever' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="audio">Selecione um arquivo de áudio:</label><br>
+        <input type="file" id="audio" name="audio" accept="audio/mp3"><br><br>
+        <input type="submit" value="Transcrever">
+    </form>
+
+    {% if transcricao %}
+    <div id="transcricao-container">
+        <h2>Transcrição:</h2>
+        <p>{{ transcricao }}</p>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div style="color: red;">
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+</body>
+
+</html>
