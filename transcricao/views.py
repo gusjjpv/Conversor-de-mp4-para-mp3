@@ -10,35 +10,43 @@ class TranscribeView(View):
         return render(request, 'transcricao/formulario.html')
 
     def post(self, request):
+        # Obtém o arquivo de áudio enviado
         audio_file = request.FILES.get('audio')
 
         if not audio_file:
-            return JsonResponse({"error": "Nenhum arquivo foi enviado."}, status=400)
+            return render(request, 'transcricao/formulario.html', {"error": "Nenhum arquivo foi enviado."})
 
+        # Verifica se o arquivo é MP3
         if not audio_file.name.endswith('.mp3'):
-            return JsonResponse({"error": "Formato de arquivo inválido. Apenas arquivos MP3 são aceitos."}, status=400)
+            return render(request, 'transcricao/formulario.html', {"error": "Formato de arquivo inválido. Apenas arquivos MP3 são aceitos."})
 
+        # Define um nome padrão para o arquivo de áudio
         audio_filename = 'audio.mp3'
         audio_path = os.path.join(settings.MEDIA_ROOT, audio_filename)
         audio_abs_path = os.path.abspath(audio_path)
 
+        # Tenta salvar o arquivo de áudio no diretório `media`
         try:
             with open(audio_abs_path, 'wb+') as destination:
                 for chunk in audio_file.chunks():
                     destination.write(chunk)
         except Exception as e:
-            return JsonResponse({"error": f"Erro ao salvar o arquivo: {str(e)}"}, status=500)
+            return render(request, 'transcricao/formulario.html', {"error": f"Erro ao salvar o arquivo: {str(e)}"})
 
+        # Verifica se o arquivo foi salvo corretamente
         if not os.path.exists(audio_abs_path):
-            return JsonResponse({"error": "Erro ao salvar o arquivo de áudio."}, status=500)
+            return render(request, 'transcricao/formulario.html', {"error": "Erro ao salvar o arquivo de áudio."})
 
+        # Carrega o modelo Whisper
         model = whisper.load_model("small")
 
         try:
+            # Executa a transcrição
             result = model.transcribe(audio_abs_path, language="pt")
             transcricao = result['text']
 
-            return JsonResponse({"message": "Transcrição gerada com sucesso!", "transcricao": transcricao}, status=200)
+            # Renderiza a página com a transcrição
+            return render(request, 'transcricao/formulario.html', {"transcricao": transcricao})
 
         except Exception as e:
-            return JsonResponse({"error": f"Erro ao transcrever o arquivo: {str(e)}"}, status=500)
+            return render(request, 'transcricao/formulario.html', {"error": f"Erro ao transcrever o arquivo: {str(e)}"})
